@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Join Albastini - The Ultimate Card Game</title>
+    <!-- Google Fonts for Premium Typography -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Playfair+Display:ital,wght@0,600;1,600&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-color: #080B10;
+            --card-bg: rgba(18, 24, 38, 0.65);
+            --border-color: rgba(255, 215, 0, 0.25);
+            --gold-glow: rgba(255, 215, 0, 0.4);
+            --gold-gradient: linear-gradient(135deg, #FFE066 0%, #F5B041 50%, #C0392B 100%);
+            --accent-color: #F5B041;
+            --text-color: #F0F3F4;
+            --text-secondary: #A6ACAF;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Outfit', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(192, 57, 43, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(245, 176, 65, 0.12) 0%, transparent 40%);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow-x: hidden;
+            padding: 20px;
+        }
+
+        /* Ambient floating card suits in the background */
+        .suit-bg {
+            position: absolute;
+            font-size: 8rem;
+            opacity: 0.04;
+            user-select: none;
+            z-index: 0;
+            pointer-events: none;
+        }
+        .suit-spade { top: 10%; left: 10%; transform: rotate(-15deg); }
+        .suit-heart { top: 20%; right: 15%; transform: rotate(20deg); color: #C0392B; opacity: 0.06; }
+        .suit-diamond { bottom: 20%; left: 12%; transform: rotate(10deg); color: #C0392B; opacity: 0.06; }
+        .suit-club { bottom: 10%; right: 10%; transform: rotate(-25deg); }
+
+        /* Glassmorphic Container */
+        .container {
+            position: relative;
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border-color);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            border-radius: 28px;
+            width: 100%;
+            max-width: 440px;
+            padding: 40px 30px;
+            text-align: center;
+            z-index: 10;
+            animation: fadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .logo {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.8rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            margin-bottom: 5px;
+            background: var(--gold-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 4px 12px rgba(245, 176, 65, 0.25);
+        }
+
+        .tagline {
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            margin-bottom: 30px;
+            font-weight: 600;
+        }
+
+        /* Elegant loader animation */
+        .loader-box {
+            position: relative;
+            margin: 25px auto;
+            width: 65px;
+            height: 65px;
+        }
+
+        .spinner {
+            width: 100%;
+            height: 100%;
+            border: 3px solid rgba(255, 255, 255, 0.05);
+            border-top-color: var(--accent-color);
+            border-radius: 50%;
+            animation: spin 1s infinite linear;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .status-text {
+            font-size: 1.1rem;
+            margin-bottom: 25px;
+            color: var(--text-color);
+            font-weight: 400;
+        }
+
+        /* Referral Code Badge */
+        .referral-container {
+            background: rgba(0, 0, 0, 0.25);
+            border: 1px dashed rgba(255, 215, 0, 0.3);
+            border-radius: 16px;
+            padding: 15px;
+            margin: 25px 0;
+        }
+
+        .referral-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            letter-spacing: 2px;
+            margin-bottom: 5px;
+        }
+
+        .referral-code-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .referral-value {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: #FFF;
+            letter-spacing: 1px;
+        }
+
+        .btn-copy {
+            background: rgba(255, 255, 255, 0.08);
+            border: none;
+            color: var(--text-color);
+            padding: 6px 12px;
+            font-size: 0.75rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 600;
+        }
+
+        .btn-copy:hover {
+            background: var(--accent-color);
+            color: #000;
+        }
+
+        /* Action Buttons */
+        .actions {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            padding: 16px 24px;
+            border-radius: 14px;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-primary {
+            background: var(--gold-gradient);
+            color: #080B10;
+            border: none;
+            box-shadow: 0 8px 24px rgba(245, 176, 65, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 28px rgba(245, 176, 65, 0.45);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-color);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-1px);
+        }
+
+        .footer-note {
+            margin-top: 30px;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            line-height: 1.4;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Ambient Card Suits -->
+    <div class="suit-bg suit-spade">♠</div>
+    <div class="suit-bg suit-heart">♥</div>
+    <div class="suit-bg suit-diamond">♦</div>
+    <div class="suit-bg suit-club">♣</div>
+
+    <div class="container">
+        <div class="logo">ALBASTINI</div>
+        <div class="tagline">The Ultimate Card Game</div>
+
+        <div class="loader-box" id="loader">
+            <div class="spinner"></div>
+        </div>
+
+        <div class="status-text" id="status-message">
+            Detecting device & launching game...
+        </div>
+
+        <!-- Referral Code Information Box -->
+        <div class="referral-container" id="referral-box" style="display: none;">
+            <div class="referral-label">Your Active Referral Code</div>
+            <div class="referral-code-wrapper">
+                <span class="referral-value" id="referral-code">------</span>
+                <button class="btn-copy" onclick="copyReferralCode()" id="copy-btn">Copy</button>
+            </div>
+        </div>
+
+        <!-- Action Fallbacks -->
+        <div class="actions">
+            <a href="#" class="btn btn-primary" id="launch-btn">Launch Game</a>
+            <a href="#" class="btn btn-secondary" id="store-btn" style="display: none;">Download from Store</a>
+        </div>
+
+        <div class="footer-note">
+            If the application doesn't open automatically, tap <strong>Launch Game</strong>, or download the app from your app store.
+        </div>
+    </div>
+
+    <script>
+        // Store URLs - Customize these URLs to point to your real Google Play / App Store pages!
+        const PLAY_STORE_URL = "https://play.google.com/store/apps/details?id=com.albastini";
+        const APP_STORE_URL = "https://apps.apple.com/app/albastini/id123456789"; 
+        const DESKTOP_FALLBACK_URL = "https://albastini.com"; // Web preview or info page
+
+        // 1. Get referral code from query params (supports: ?referral=XXX, ?code=XXX, ?refferal=XXX)
+        function getQueryParam(name) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(name) || urlParams.get('code') || urlParams.get('refferal');
+        }
+
+        const referralCode = getQueryParam('referral') || "";
+        if (referralCode) {
+            document.getElementById('referral-box').style.display = 'block';
+            document.getElementById('referral-code').innerText = referralCode;
+        }
+
+        // 2. Identify OS (Android, iOS, or Desktop)
+        const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+        let isAndroid = /android/i.test(userAgent);
+        let isIOS = /iPad|iPhone|iPod/.test(userAgent) && !window.MSStream;
+
+        // Custom scheme target: unitydl://referalLink (Matches C# ProcessDeepLinkMngr and AndroidManifest)
+        const appDeepLink = `unitydl://referalLink?code=${encodeURIComponent(referralCode)}`;
+
+        // Configure Launch and Store Button links
+        const launchBtn = document.getElementById('launch-btn');
+        const storeBtn = document.getElementById('store-btn');
+        
+        launchBtn.href = appDeepLink;
+
+        if (isAndroid) {
+            storeBtn.style.display = 'inline-flex';
+            storeBtn.innerText = "Download on Google Play";
+            storeBtn.href = PLAY_STORE_URL;
+        } else if (isIOS) {
+            storeBtn.style.display = 'inline-flex';
+            storeBtn.innerText = "Download on App Store";
+            storeBtn.href = APP_STORE_URL;
+        } else {
+            storeBtn.style.display = 'inline-flex';
+            storeBtn.innerText = "Visit Website";
+            storeBtn.href = DESKTOP_FALLBACK_URL;
+        }
+
+        // 3. Try to auto-redirect
+        function attemptRedirect() {
+            // Note: Many chat platforms block automatic custom schemes unless user interacts with the page first.
+            // But we attempt a dynamic redirection.
+            window.location.href = appDeepLink;
+
+            // Start a timeout timer. If the browser is still active on this page after 1.5 seconds,
+            // it means the application is not installed on the device. Redirect them to the app store!
+            const startTime = Date.now();
+            setTimeout(function() {
+                // If the tab is blurred or hidden, the game was successfully opened
+                if (document.hidden || document.webkitHidden) {
+                    document.getElementById('status-message').innerText = "Game opened successfully!";
+                    document.getElementById('loader').style.display = 'none';
+                    return;
+                }
+
+                // If they are still here after 1.5s, the app is not installed or auto-redirect failed
+                if (Date.now() - startTime < 1800) {
+                    document.getElementById('status-message').innerText = "Game not launched. Select an action below:";
+                    document.getElementById('loader').style.display = 'none';
+                    
+                    // Auto-take them to store if on mobile
+                    if (isAndroid) {
+                        window.location.href = PLAY_STORE_URL;
+                    } else if (isIOS) {
+                        window.location.href = APP_STORE_URL;
+                    }
+                }
+            }, 1500);
+        }
+
+        // Execute auto-redirect on page load
+        window.onload = function() {
+            attemptRedirect();
+        };
+
+        // Helper to copy referral code manually to clipboard
+        function copyReferralCode() {
+            navigator.clipboard.writeText(referralCode).then(() => {
+                const btn = document.getElementById('copy-btn');
+                btn.innerText = "Copied!";
+                btn.style.background = "#2ECC71";
+                btn.style.color = "#FFF";
+                setTimeout(() => {
+                    btn.innerText = "Copy";
+                    btn.style.background = "rgba(255, 255, 255, 0.08)";
+                    btn.style.color = "var(--text-color)";
+                }, 2000);
+            });
+        }
+    </script>
+</body>
+</html>
