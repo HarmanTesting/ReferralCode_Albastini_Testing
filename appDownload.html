@@ -245,7 +245,7 @@
         </div>
 
         <div class="status-text" id="status-message">
-            Detecting device & launching game...
+            Launching game...
         </div>
 
         <!-- Referral Code Information Box -->
@@ -316,13 +316,11 @@
 
         // 3. Try to auto-redirect
         function attemptRedirect() {
-            // Note: Many chat platforms block automatic custom schemes unless user interacts with the page first.
-            // But we attempt a dynamic redirection.
             window.location.href = appDeepLink;
 
-            // Start a timeout timer. If the browser is still active on this page after 1.5 seconds,
-            // it means the application is not installed on the device. Redirect them to the app store!
+            const timeoutDuration = 5000; // 5.0 seconds timeout
             const startTime = Date.now();
+            
             setTimeout(function() {
                 // If the tab is blurred or hidden, the game was successfully opened
                 if (document.hidden || document.webkitHidden) {
@@ -331,19 +329,25 @@
                     return;
                 }
 
-                // If they are still here after 1.5s, the app is not installed or auto-redirect failed
-                if (Date.now() - startTime < 1800) {
-                    document.getElementById('status-message').innerText = "Game not launched. Select an action below:";
+                // If they are still here after the timeout, the app is not installed or auto-redirect failed.
+                // We check if the elapsed time matches the timeout to ensure the browser tab wasn't in background.
+                if (Date.now() - startTime < (timeoutDuration + 800)) {
+                    document.getElementById('status-message').innerText = "Redirecting to store/website...";
                     document.getElementById('loader').style.display = 'none';
                     
-                    // Auto-take them to store if on mobile
+                    // Auto-take them to store if on mobile, or client's website on desktop
                     if (isAndroid) {
                         window.location.href = PLAY_STORE_URL;
                     } else if (isIOS) {
                         window.location.href = APP_STORE_URL;
+                    } else {
+                        window.location.href = DESKTOP_FALLBACK_URL;
                     }
+                } else {
+                    document.getElementById('status-message').innerText = "Game opened successfully!";
+                    document.getElementById('loader').style.display = 'none';
                 }
-            }, 10000);
+            }, timeoutDuration);
         }
 
         // Execute auto-redirect on page load
